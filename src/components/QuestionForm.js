@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function QuestionForm(props) {
+function QuestionForm() {
   const [formData, setFormData] = useState({
     prompt: "",
     answer1: "",
@@ -10,17 +10,56 @@ function QuestionForm(props) {
     correctIndex: 0,
   });
 
-  function handleChange(event) {
+  const handleChange = (event) => {
     setFormData({
       ...formData,
       [event.target.name]: event.target.value,
     });
-  }
+  };
 
-  function handleSubmit(event) {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData);
-  }
+    // Call AddQuestion when the form is submitted
+    AddQuestion();
+  };
+
+  const AddQuestion = () => {
+    fetch('http://localhost:4000/questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: formData.prompt,
+        answers: [
+          formData.answer1,
+          formData.answer2,
+          formData.answer3,
+          formData.answer4,
+        ],
+        correctIndex: parseInt(formData.correctIndex, 10),
+      }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to add question');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Question added successfully:', data);
+        // Optionally reset the form
+        setFormData({
+          prompt: "",
+          answer1: "",
+          answer2: "",
+          answer3: "",
+          answer4: "",
+          correctIndex: 0,
+        });
+      })
+      .catch(error => console.error('Error adding question:', error));
+  };
 
   return (
     <section>
